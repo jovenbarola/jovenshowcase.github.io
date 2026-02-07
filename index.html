@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: true }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joven Showcase | Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>[x-cloak] { display: none !important; }</style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300" x-data="portfolio()">
+
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <h1 class="text-2xl font-black tracking-tighter uppercase">
+            Joven<span class="text-brand">Showcase</span>
+        </h1>
+        <div class="flex items-center gap-6">
+            <button @click="darkMode = !darkMode" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:ring-2 ring-brand transition-all">
+                <span x-show="!darkMode">🌙</span>
+                <span x-show="darkMode">☀️</span>
+            </button>
+            <a href="#" class="hidden md:block font-medium hover:text-brand transition">Work</a>
+            <a href="#" class="bg-brand text-white px-5 py-2 rounded-lg font-bold hover:opacity-90 transition">Hire Me</a>
+        </div>
+    </nav>
+
+    <header class="py-24 px-6 text-center">
+        <span class="inline-block px-4 py-1.5 mb-6 text-xs font-bold tracking-widest text-brand uppercase bg-blue-50 dark:bg-blue-900/30 rounded-full">
+            Available for new projects
+        </span>
+        <h2 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
+            The Digital Works of <br><span class="text-brand">Joven.</span>
+        </h2>
+        <p class="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+            Crafting high-performance applications with clean code and intuitive user interfaces.
+        </p>
+    </header>
+
+    <section class="max-w-7xl mx-auto px-6 mb-16">
+        <div class="flex flex-wrap gap-3 justify-center">
+            <template x-for="tag in allTags" :key="tag">
+                <button 
+                    @click="filter = tag"
+                    :class="filter === tag ? 'bg-brand text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'"
+                    class="px-6 py-2 rounded-full font-bold transition-all capitalize"
+                    x-text="tag">
+                </button>
+            </template>
+        </div>
+    </section>
+
+    <main class="max-w-7xl mx-auto px-6 pb-32">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <template x-for="project in filteredProjects" :key="project.id">
+                <div 
+                    class="group relative bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-brand transition-all cursor-pointer"
+                    @click="selectedProject = project; openModal = true">
+                    
+                    <div class="aspect-video bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                        <img :src="project.image" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    </div>
+                    
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold mb-2 group-hover:text-brand transition" x-text="project.title"></h3>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mb-6" x-text="project.description"></p>
+                        <div class="flex gap-2">
+                            <template x-for="tech in project.tags" :key="tech">
+                                <span class="text-[11px] font-black uppercase tracking-tighter border border-slate-300 dark:border-slate-700 px-2 py-1 rounded" x-text="tech"></span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </main>
+
+    <div 
+        class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-md"
+        x-show="openModal" 
+        x-cloak
+        x-transition.opacity
+        @click.away="openModal = false">
+        
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl" @click.stop>
+            <div class="p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-4xl font-black mb-2" x-text="selectedProject.title"></h2>
+                        <span class="text-brand font-bold uppercase tracking-widest text-sm" x-text="selectedProject.category"></span>
+                    </div>
+                    <button @click="openModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-2xl">&times;</button>
+                </div>
+                
+                <p class="text-lg text-slate-600 dark:text-slate-400 mb-8 leading-relaxed" x-text="selectedProject.longDescription"></p>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a :href="selectedProject.link" class="bg-brand text-white px-8 py-4 rounded-xl font-bold text-center hover:scale-[1.02] transition transform">Launch Application</a>
+                    <a href="#" class="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white px-8 py-4 rounded-xl font-bold text-center hover:bg-slate-200 dark:hover:bg-slate-700 transition">GitHub Repo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function portfolio() {
+            return {
+                filter: 'all',
+                openModal: false,
+                selectedProject: {},
+                allTags: ['all', 'web', 'saas', 'tools'],
+                projects: [
+                    {
+                        id: 1,
+                        title: 'Joven CRM',
+                        category: 'saas',
+                        description: 'A custom client management system for freelancers.',
+                        longDescription: 'This CRM helps independent contractors track leads, manage invoices, and visualize their annual revenue growth with an integrated dashboard.',
+                        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800',
+                        tags: ['Tailwind', 'Alpine', 'Node'],
+                        link: '#'
+                    },
+                    {
+                        id: 2,
+                        title: 'Pixel Perfect',
+                        category: 'tools',
+                        description: 'A browser extension for UI/UX developers.',
+                        longDescription: 'Pixel Perfect allows designers to overlay their mockups directly on top of the live website to check for CSS accuracy in real-time.',
+                        image: 'https://images.unsplash.com/photo-1586717791821-3f44a563eb4c?auto=format&fit=crop&q=80&w=800',
+                        tags: ['Javascript', 'Manifest V3'],
+                        link: '#'
+                    }
+                ],
+                get filteredProjects() {
+                    if (this.filter === 'all') return this.projects;
+                    return this.projects.filter(p => p.category === this.filter);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
