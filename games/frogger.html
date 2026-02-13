@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="phaser.min.js"></script>
+    <style> body { margin: 0; background: #111; display: flex; justify-content: center; } </style>
+</head>
+<body>
+<script>
+    const config = {
+        type: Phaser.AUTO,
+        width: 600,
+        height: 600,
+        physics: {
+            default: 'arcade',
+            arcade: { debug: false }
+        },
+        scene: { preload: preload, create: create, update: update }
+    };
+
+    const GRID_SIZE = 40;
+    const game = new Phaser.Game(config);
+
+    let player;
+    let cursors;
+    let cars;
+    let logs;
+
+    function preload() {
+        // Placeholders
+        this.load.image('frog', 'https://labs.phaser.io/assets/sprites/phaser-dude.png');
+        this.load.image('car', 'https://labs.phaser.io/assets/sprites/car95.png');
+        this.load.image('log', 'https://labs.phaser.io/assets/sprites/platform.png');
+    }
+
+    function create() {
+        // 1. Draw Background (Road and River)
+        let graphics = this.add.graphics();
+        graphics.fillStyle(0x0000ff, 1); // River
+        graphics.fillRect(0, 40, 600, 200);
+        graphics.fillStyle(0x333333, 1); // Road
+        graphics.fillRect(0, 320, 600, 200);
+
+        // 2. Groups
+        cars = this.physics.add.group();
+        logs = this.physics.add.group();
+
+        // Spawn some cars on the road
+        for(let i = 0; i < 4; i++) {
+            spawnEntity(cars, 340 + (i * 45), 'car', -150);
+        }
+
+        // Spawn some logs in the river
+        for(let i = 0; i < 3; i++) {
+            spawnEntity(logs, 60 + (i * 60), 'log', 100);
+        }
+
+        // 3. Player
+        player = this.physics.add.sprite(300, 580, 'frog').setScale(0.8);
+        player.setCollideWorldBounds(true);
+
+        // 4. Controls (Input)
+        cursors = this.input.keyboard.createCursorKeys();
+        
+        // Use "KeyDown" for grid movement so one tap = one jump
+        this.input.keyboard.on('keydown-LEFT', () => player.x -= GRID_SIZE);
+        this.input.keyboard.on('keydown-RIGHT', () => player.x += GRID_SIZE);
+        this.input.keyboard.on('keydown-UP', () => player.y -= GRID_SIZE);
+        this.input.keyboard.on('keydown-DOWN', () => player.y += GRID_SIZE);
+
+        // 5. Collisions
+        this.physics.add.overlap(player, cars, resetGame, null, this);
+    }
+
+    function update() {
+        // Wrap moving objects around the screen
+        [cars, logs].forEach(group => {
+            group.children.iterate(child => {
+                if (child.x < -50) child.x = 650;
+                if (child.x > 650) child.x = -50;
+            });
+        });
+
+        // River Logic
+        let onLog = false;
+        this.physics.overlap(player, logs, (p, log) => {
+            onLog = true;
+            p.x += log.body.velocity.x * 0.016; // Move player with the log
+        });
+
+        // If player is in the river area but NOT on a log
+        if (player.y < 240 && player.y > 40 && !onLog) {
+            resetGame();
+        }
+
+        // Win Condition
+        if (player.y < 40) {
+            alert("You Win!");
+            resetGame();
+        }
+    }
+
+    function spawnEntity(group, y, key, speed) {
+        let item = group.create(Phaser.Math.Between(0, 600), y, key);
+        item.body.allowGravity = false;
+        item.setVelocityX(speed);
+        if (key === 'log') item.setDisplaySize(100, 30);
+    }
+
+    function resetGame() {
+        player.setPosition(300, 580);
+    }
+</script>
+</body>
+</html>

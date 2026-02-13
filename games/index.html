@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser Arcade Collection</title>
+    <script src="/games/phaser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #ui-container {
+            position: absolute;
+            z-index: 10;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border: 4px solid #fff;
+            border-radius: 15px;
+            box-shadow: 0 0 20px #fff;
+        }
+
+        h1 {
+            color: #00ff00;
+            font-size: 3rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 2px 2px #ff00ff;
+        }
+
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .game-link {
+            text-decoration: none;
+            color: #fff;
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .game-link:hover {
+            color: #000;
+            background-color: #fff;
+            border: 2px solid #00ff00;
+            transform: scale(1.1);
+            cursor: pointer;
+        }
+
+        #phaser-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="phaser-bg"></div>
+
+    <div id="ui-container">
+        <h1>Arcade Retro</h1>
+        <div class="menu-options">
+            <a href="/games/spaceshooter.html" class="game-link">🚀 SPACE SHOOTER</a>
+            <a href="/games/mario.html" class="game-link">🍄 MARIO CLONE</a>
+            <a href="/games/frogger.html" class="game-link">🐸 FROGGER CROSSING</a>
+            <a href="../" class="game-link">🏠 BACK TO MAIN</a>
+        </div>
+    </div>
+
+    <script>
+        // Simple Phaser background effect for the menu
+        const config = {
+            type: Phaser.AUTO,
+            parent: 'phaser-bg',
+            width: window.innerWidth,
+            height: window.innerHeight,
+            scene: {
+                create: create,
+                update: update
+            }
+        };
+
+        const game = new Phaser.Game(config);
+        let stars;
+
+        function create() {
+            // Create a simple starfield effect
+            stars = [];
+            for (let i = 0; i < 200; i++) {
+                let x = Phaser.Math.Between(0, config.width);
+                let y = Phaser.Math.Between(0, config.height);
+                let star = this.add.circle(x, y, Phaser.Math.Between(1, 3), 0xffffff);
+                star.alpha = Phaser.Math.FloatBetween(0.2, 1);
+                stars.push({
+                    sprite: star,
+                    speed: Phaser.Math.FloatBetween(0.5, 3)
+                });
+            }
+        }
+
+        function update() {
+            // Move stars to give a sense of depth
+            stars.forEach(star => {
+                star.sprite.y += star.speed;
+                if (star.sprite.y > config.height) {
+                    star.sprite.y = 0;
+                    star.sprite.x = Phaser.Math.Between(0, config.width);
+                }
+            });
+        }
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
