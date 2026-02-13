@@ -13,26 +13,86 @@
                 extend: {
                     colors: {
                         brand: '#3b82f6',
+                    },
+                    animation: {
+                        'twinkle': 'twinkle 4s ease-in-out infinite',
+                        'shooting': 'shooting 10s linear infinite',
+                    },
+                    keyframes: {
+                        twinkle: {
+                            '0%, 100%': { opacity: 0.2, transform: 'scale(0.8)' },
+                            '50%': { opacity: 1, transform: 'scale(1.2)' },
+                        },
+                        shooting: {
+                            '0%': { transform: 'translateX(0) translateY(0) rotate(-45deg)', opacity: 0, width: '0px' },
+                            '10%': { opacity: 1, width: '100px' },
+                            '20%': { transform: 'translateX(-1000px) translateY(1000px) rotate(-45deg)', opacity: 0, width: '0px' },
+                            '100%': { opacity: 0 }
+                        }
                     }
                 }
             }
         }
     </script>
-    <style>[x-cloak] { display: none !important; }</style>
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        /* Forces the background to stay dark/space-like even if classes struggle */
+        .dark body {
+            background: radial-gradient(circle at center, #111827 0%, #030712 100%) !important;
+            background-attachment: fixed;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .shooting-star {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
 </head>
 <body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300" x-data="portfolio()">
+
+    <div x-show="darkMode" class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[120px]"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/10 blur-[120px]"></div>
+
+        <div class="shooting-star animate-shooting top-10 right-10"></div>
+        <div class="shooting-star animate-shooting top-1/2 right-1/4" style="animation-delay: 4s;"></div>
+
+        <template x-for="i in 80" :key="i">
+            <div 
+                class="star animate-twinkle" 
+                :style="`
+                    width: ${Math.random() * 2 + 1}px; 
+                    height: ${Math.random() * 2 + 1}px; 
+                    top: ${Math.random() * 100}%; 
+                    left: ${Math.random() * 100}%; 
+                    animation-delay: ${Math.random() * 5}s;
+                `">
+            </div>
+        </template>
+    </div>
 
     <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
         <h1 class="text-2xl font-black tracking-tighter uppercase">
             Joven<span class="text-brand">Showcase</span>
         </h1>
         <div class="flex items-center gap-6">
-            <button @click="darkMode = !darkMode" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:ring-2 ring-brand transition-all">
+            <!-- <button @click="darkMode = !darkMode" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:ring-2 ring-brand transition-all">
                 <span x-show="!darkMode">🌙</span>
                 <span x-show="darkMode">☀️</span>
-            </button>
-            <a href="#" class="hidden md:block font-medium hover:text-brand transition">Work</a>
-            <a href="#" class="bg-brand text-white px-5 py-2 rounded-lg font-bold hover:opacity-90 transition">Hire Me</a>
+            </button> -->
+            <!-- <a href="#" class="hidden md:block font-medium hover:text-brand transition">Work</a> -->
+            <a href="mailto:jovenbarola@yahoo.com" class="bg-brand text-white px-5 py-2 rounded-lg font-bold hover:opacity-90 transition">Hire Me</a>
         </div>
     </nav>
 
@@ -41,10 +101,10 @@
             Available for new projects
         </span>
         <h2 class="text-5xl md:text-7xl font-black mb-6 leading-tight">
-            The Digital Works of <br><span class="text-brand">Joven.</span>
+            My Digital Works<br><span class="text-brand">Professional Solutions</span>
         </h2>
         <p class="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-            Crafting high-performance applications with clean code and intuitive user interfaces.
+            From enterprise ERP systems to engaging casual games, delivering high-performance digital experiences.
         </p>
     </header>
 
@@ -68,14 +128,17 @@
                     class="group relative bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-brand transition-all cursor-pointer"
                     @click="selectedProject = project; openModal = true">
                     
-                    <div class="aspect-video bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                    <div class="aspect-video bg-slate-200 dark:bg-slate-800 overflow-hidden relative">
                         <img :src="project.image" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <div class="absolute top-4 left-4">
+                            <span class="bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest" x-text="project.category"></span>
+                        </div>
                     </div>
                     
                     <div class="p-8">
                         <h3 class="text-2xl font-bold mb-2 group-hover:text-brand transition" x-text="project.title"></h3>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm mb-6" x-text="project.description"></p>
-                        <div class="flex gap-2">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2" x-text="project.description"></p>
+                        <div class="flex flex-wrap gap-2">
                             <template x-for="tech in project.tags" :key="tech">
                                 <span class="text-[11px] font-black uppercase tracking-tighter border border-slate-300 dark:border-slate-700 px-2 py-1 rounded" x-text="tech"></span>
                             </template>
@@ -106,8 +169,8 @@
                 <p class="text-lg text-slate-600 dark:text-slate-400 mb-8 leading-relaxed" x-text="selectedProject.longDescription"></p>
                 
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <a :href="selectedProject.link" class="bg-brand text-white px-8 py-4 rounded-xl font-bold text-center hover:scale-[1.02] transition transform">Launch Application</a>
-                    <a href="#" class="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white px-8 py-4 rounded-xl font-bold text-center hover:bg-slate-200 dark:hover:bg-slate-700 transition">GitHub Repo</a>
+                    <a href="#" class="bg-brand text-white px-8 py-4 rounded-xl font-bold text-center hover:scale-[1.02] transition transform">View Project</a>
+                    <a href="#" class="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white px-8 py-4 rounded-xl font-bold text-center hover:bg-slate-200 dark:hover:bg-slate-700 transition">Case Study</a>
                 </div>
             </div>
         </div>
@@ -119,27 +182,70 @@
                 filter: 'all',
                 openModal: false,
                 selectedProject: {},
-                allTags: ['all', 'web', 'saas', 'tools'],
+                allTags: ['all', 'web app', 'mobile app', 'casual game'],
                 projects: [
                     {
                         id: 1,
-                        title: 'Joven CRM',
-                        category: 'saas',
-                        description: 'A custom client management system for freelancers.',
-                        longDescription: 'This CRM helps independent contractors track leads, manage invoices, and visualize their annual revenue growth with an integrated dashboard.',
-                        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800',
-                        tags: ['Tailwind', 'Alpine', 'Node'],
-                        link: '#'
+                        title: 'Hotel Management System',
+                        category: 'web app',
+                        description: 'A comprehensive suite for hospitality management.',
+                        longDescription: 'Manage bookings, room service, housekeeping, and guest check-ins through a centralized cloud platform designed for modern hotels.',
+                        image: 'https://ik.imagekit.io/jovenb/showcases/hotel-management.jpg',
+                        tags: ['Vue.js', 'PostgreSQL', 'Cloud'],
                     },
                     {
                         id: 2,
-                        title: 'Pixel Perfect',
-                        category: 'tools',
-                        description: 'A browser extension for UI/UX developers.',
-                        longDescription: 'Pixel Perfect allows designers to overlay their mockups directly on top of the live website to check for CSS accuracy in real-time.',
-                        image: 'https://images.unsplash.com/photo-1586717791821-3f44a563eb4c?auto=format&fit=crop&q=80&w=800',
-                        tags: ['Javascript', 'Manifest V3'],
-                        link: '#'
+                        title: 'ERP Accounting',
+                        category: 'web app',
+                        description: 'Enterprise-grade financial tracking and reporting.',
+                        longDescription: 'Automate bookkeeping, tax calculations, and financial forecasting with our robust ERP accounting module.',
+                        image: 'https://ik.imagekit.io/jovenb/showcases/erp-accounting.jpg',
+                        tags: ['Laravel', 'React', 'SME', 'SaaS'],
+                    },
+                    {
+                        id: 3,
+                        title: 'ERP Inventory',
+                        category: 'web app',
+                        description: 'Real-time stock management and supply chain logistics.',
+                        longDescription: 'Track stock levels across multiple warehouses, manage suppliers, and automate reordering processes.',
+                        image: 'https://ik.imagekit.io/jovenb/showcases/erp-inventory.jpg',
+                        tags: ['Laravel', 'Inventory', 'Logistics', 'SaaS'],
+                    },
+                    {
+                        id: 4,
+                        title: 'Payroll System',
+                        category: 'web app',
+                        description: 'Automated salary distribution and compliance.',
+                        longDescription: 'Handle complex payroll cycles, tax deductions, and employee benefits with a single click.',
+                        image: 'https://ik.imagekit.io/jovenb/showcases/payroll.jpg',
+                        tags: ['Laravel', 'React', 'HR Tech', 'Automation'],
+                    },
+                    {
+                        id: 5,
+                        title: 'Timekeeping',
+                        category: 'web app',
+                        description: 'Precision attendance tracking and scheduling.',
+                        longDescription: 'Monitor employee work hours, shifts, and leave requests with integrated biometric support.',
+                        image: 'https://ik.imagekit.io/jovenb/showcases/timekeeping.jpg',
+                        tags: ['Java Spring', 'Anviz', 'DigitalPersona 4500',  'HRMS', 'Biometric'],
+                    },
+                    {
+                        id: 6,
+                        title: 'Point Of Sale (Handheld, Smartphone, Tablet)',
+                        category: 'mobile app',
+                        description: 'Turn any smartphone into a cash register.',
+                        longDescription: 'A lightweight mobile application allowing small business owners to sell products and accept payments anywhere.',
+                        image: 'https://ik.imagekit.io/jovenb/showcases/pos.jpg',
+                        tags: ['iOS', 'Android', 'Flutter', 'Retail', 'SaaS'],
+                    },
+                    {
+                        id: 7,
+                        title: 'Flap My Duck',
+                        category: 'casual game',
+                        description: 'A charming arcade game about a duck on a mission.',
+                        longDescription: 'Navigate our duck protagonist through a forest of obstacles. Tap to flap and avoid hitting the wood to achieve the high score!',
+                        image: 'https://ik.imagekit.io/jovenb/showcases/flap-my-duck.jpg',
+                        tags: ['PhaserJS', '2D', 'Arcade', 'HTML5', 'Mobile', 'Hobby'],
                     }
                 ],
                 get filteredProjects() {
